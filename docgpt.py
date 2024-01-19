@@ -1,31 +1,25 @@
 import os
-import getpass
+import sys
 import requests
 from dotenv import load_dotenv
-import time
+import webbrowser
+from authpage import app as authpage
+from threading import Thread
 
-# Load environment variables from .env file
 load_dotenv()
 
-def get_device_code():
-    payload = {'client_id': os.getenv("GITHUB_CLIENT_ID"), 'scope': 'repo'}
-    response = requests.post('https://github.com/login/device/code', data=payload)
+def get_github_token(code):
+    payload = {
+        'client_id': os.getenv("GITHUB_CLIENT_ID"),
+        'code': code
+    }
+    
+    headers = {'Accept': 'application/json'}
+    response = requests.post('https://github.com/login/oauth/access_token', data=payload, headers=headers)
     if response.status_code != 200:
         print(f"Error: {response.status_code}, {response.text}")
         return None
-    return response.json()
-
-def poll_for_access_token(device_code, interval):
-    payload = {
-        'client_id': os.getenv("GITHUB_CLIENT_ID"),
-        'device_code': device_code,
-        'grant_type': 'urn:ietf:params:oauth:grant-type:device_code'
-    }
-    while True:
-        response = requests.post('https://github.com/login/oauth/access_token', data=payload)
-        if response.status_code == 200:
-            return response.json().get('access_token')
-        time.sleep(interval)
+    return response.json().get('access_token')
 
 def list_repositories(access_token):
     """
@@ -34,7 +28,6 @@ def list_repositories(access_token):
     headers = {'Authorization': f'token {access_token}'}
     response = requests.get('https://api.github.com/user/repos', headers=headers)
     repos = response.json()
-
     repos_without_readme = [repo for repo in repos if not has_readme(repo, access_token)]
     return repos_without_readme
 
@@ -52,20 +45,24 @@ def has_readme(repo, access_token):
         return True
     return False
 
+def run_authpage():
+    authpage.run(port=8000, debug=False)
 
 def main():
-    device_code_response = get_device_code()
+    Thread(target=run_authpage, daemon=True).start()
+    print(f"Hi, please visit the following URL and authorize the application:")
+    print(f"https://github.com/login/oauth/authorize?client_id={os.getenv('GITHUB_CLIENT_ID')}&scope=repo")
+    webbrowser.open(f"https://github.com/login/oauth/authorize?client_id={os.getenv('GITHUB_CLIENT_ID')}&scope=repo")
 
-    if device_code_response is None:
-        print("Failed to retrieve the device code.")
-        return
-
-    print("Please visit https://github.com/login/device and enter this code:", device_code_response['user_code'])
-    access_token = poll_for_access_token(device_code_response['device_code'], device_code_response['interval'])
+    code = input("Enter the code from GitHub: ")
+    access_token = get_github_token(code)
     
-    if not access_token:
-        print("Failed to authenticate with GitHub.")
-        return
+    for i in range(5):
+        if not access_token:
+            print("Failed to authenticate with GitHub.")
+            i += 1
+            if i == 5:
+                return
 
     print("Successfully authenticated with GitHub.")
     repositories = list_repositories(access_token)
@@ -73,9 +70,11 @@ def main():
     if not repositories:
         print("No repositories found without a README.md.")
         return
-
+    
+    print("Here are the repositories without README.md")
+    print(f"Repository Name: ")
     for repo in repositories:
-        print(f"Repository Name: {repo['name']} - URL: {repo['html_url']}")
+        print(f"{repo['name']} - URL: {repo['html_url']}")
 
 if __name__ == "__main__":
     main()
