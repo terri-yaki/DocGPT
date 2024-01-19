@@ -11,6 +11,7 @@ load_dotenv()
 def get_github_token(code):
     payload = {
         'client_id': os.getenv("GITHUB_CLIENT_ID"),
+        'client_secret': os.getenv("GITHUB_CLIENT_SECRET"),
         'code': code
     }
     
