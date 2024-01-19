@@ -1,4 +1,4 @@
-# ⚠️ UNDER DEVELOPMENT: DocGPT
+# ⚠️ UNDER DEVELOPMENT: DocGPT (ReadmeGPT)
 
 ## Overview
 
