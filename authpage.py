@@ -2,18 +2,18 @@ from flask import Flask, request
 import logging
 
 app = Flask(__name__)
-logging.getLogger('werkzeug').disabled = True
 
 @app.route('/callback')
 def callback():
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
     code = request.args.get('code')
-    
     return f'''
         <html>
             <body>
                 <center>
                 <p>Authorization code: <input type="text" value="{code}" id="authCode"><button onclick="copyCode()">Copy</button></p>
-                <p>Please copy the code and paste in the terminal.</p>
+                <p>Please copy and paste the code in the terminal.</p>
                 <script>
                     function copyCode() {{
                         var copyText = document.getElementById("authCode");
@@ -21,7 +21,7 @@ def callback():
                         document.execCommand("copy");
                     }}
                 </script>
-                <center>
+            </center>
             </body>
         </html>
     '''
