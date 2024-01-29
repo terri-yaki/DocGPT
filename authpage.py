@@ -25,6 +25,15 @@ def callback():
             </body>
         </html>
     '''
+    
+@app.route('/shutdown')
+def shutdown():
+    shutdownrequest = request.environ.get('werkzeug.server.shutdown')
+    if shutdownrequest is None:
+        raise RuntimeError()
+    shutdownrequest()
+    return
+
 
 if __name__ == "__main__":
     app.run(port=8000)

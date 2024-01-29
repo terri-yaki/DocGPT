@@ -3,46 +3,44 @@ import sys
 import requests
 from dotenv import load_dotenv
 import webbrowser
+import base64
 from authpage import app as authpage
 from threading import Thread
+from readmegen import commit, generate_readme
 
 load_dotenv()
 
 def get_github_token(code):
     payload = {
         'client_id': os.getenv("GITHUB_CLIENT_ID"),
-        'client_secret': os.getenv("GITHUB_CLIENT_SECRET"),
+        'client_secret': os.getenv("GITHUB_CLIENT_SECRET"), #both from env
         'code': code
     }
     
-    headers = {'Accept': 'application/json'}
+    headers = {'Accept': 'application/json'} #formats
     response = requests.post('https://github.com/login/oauth/access_token', data=payload, headers=headers)
-    if response.status_code != 200:
+    if response.status_code != 200: #check status
         print(f"Error: {response.status_code}, {response.text}")
         return None
     return response.json().get('access_token')
 
 def list_repositories(access_token):
-    """
-    List all repositories for the authenticated user.
-    """
+    #List all repositories for the authenticated user.
     headers = {'Authorization': f'token {access_token}'}
     response = requests.get('https://api.github.com/user/repos', headers=headers)
     repos = response.json()
-    repos_without_readme = [repo for repo in repos if not has_readme(repo, access_token)]
+    repos_without_readme = [repo for repo in repos if not has_readme(repo, access_token)] #list out repo w/o readme for every repo you find in repos list
     return repos_without_readme
 
 def has_readme(repo, access_token):
-    """
-    Check if the specified repository has a README.md file.
-    """
+    #Check if the specified repository has a readme.md file.
     headers = {'Authorization': f'token {access_token}'}
     url = f"{repo['contents_url'].replace('{+path}', 'README.md')}"
 
     response = requests.get(url, headers=headers)
     
     if response.status_code == 200:
-        # README exists
+        # readme exists
         return True
     return False
 
@@ -50,22 +48,21 @@ def run_authpage():
     authpage.run(port=8000, debug=False)
 
 def main():
-    Thread(target=run_authpage, daemon=True).start()
+    save_folder = "saved_conversation/"
+    Thread(target=run_authpage, daemon=True).start() #silent host server
     print(f"Hi, please visit the following URL and authorize the application:")
     print(f"https://github.com/login/oauth/authorize?client_id={os.getenv('GITHUB_CLIENT_ID')}&scope=repo")
     webbrowser.open(f"https://github.com/login/oauth/authorize?client_id={os.getenv('GITHUB_CLIENT_ID')}&scope=repo")
 
     code = input("Enter the code from GitHub: ")
+    print("One second, fetching...")
     access_token = get_github_token(code)
     
-    for i in range(5):
-        if not access_token:
-            print("Failed to authenticate with GitHub.")
-            i += 1
-            if i == 5:
-                return
+    if not access_token:
+        print("Failed to authenticate with GitHub.")
+        return
 
-    print("Successfully authenticated with GitHub.")
+    print("Successfully authenticated with GitHub.\nLoading your repositories...")
     repositories = list_repositories(access_token)
 
     if not repositories:
@@ -77,5 +74,40 @@ def main():
     for repo in repositories:
         print(f"{repo['name']} - URL: {repo['html_url']}")
 
+    user_choice = input("Enter the name of the repository you want a README for, or 'all' for all repositories:").strip()
+
+    if user_choice.lower() == 'all':
+        for repo in repositories:
+            readme_content = generate_readme(repo)
+            if commit(access_token, repo, readme_content):
+                print(f"README successfully created for {repo['name']}")
+            else:
+                print(f"Failed to create README for {repo['name']}")
+    try:
+        selected_repo = next((repo for repo in repositories if repo['name'].lower() == user_choice.lower()), None)
+        selected_repo_url = selected_repo['html_url']
+        readme_content = generate_readme(selected_repo_url)
+        if readme_content:
+            print("Generated README Content:\n", readme_content)
+            user_confirmation = input("\nDo you want to commit this README to your repository? (yes/no): ")
+            if user_confirmation.lower() == 'yes':
+                success = commit(access_token, selected_repo, readme_content)
+                if success:
+                    print("README successfully committed to the repository.").lower()
+                else:
+                    user_input = input("Failed to commit README, would you like to save it instead? (yes/no): ")
+                    if user_input == 'yes':
+                        file_title = input("Enter a title for the readme file: ")
+                        file_name = file_title + ".txt"  # Create filename from title
+                        full_path = os.path.join(save_folder, file_name)
+                        with open(full_path, "w") as file:
+                            file.write("\n".join(readme_content))
+                        print(f"Content saved as '{full_path}'.")
+        else:
+            print(f"Failed to create README for {selected_repo['name']}")
+    except:
+        print("Repository not found.")
+
 if __name__ == "__main__":
     main()
+    requests.get('http://localhost:8000/shutdown') #close the localhost
