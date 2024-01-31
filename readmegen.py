@@ -16,7 +16,7 @@ def generate_readme(selected_repo_url):
 
 def commit(access_token, selected_repo, readme_content):
     # GitHub API endpoint to update repository content
-    api_url = f"{selected_repo['html_url']}/contents/README.md"
+    api_url = f"{selected_repo['html_url']}/README.md"
     headers = {
         "Authorization": f"token {access_token}",
         "Accept": "application/vnd.github.v3+json"
