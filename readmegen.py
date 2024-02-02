@@ -22,11 +22,11 @@ def commit(access_token, selected_repo, readme_content):
         "Accept": "application/vnd.github.v3+json"
     }
     # Encode the README content to Base64 as required by GitHub API
-    content_base64 = base64.b64encode(readme_content.encode()).decode()
+    readme_content_base64 = base64.b64encode(readme_content.encode()).decode()
     data = {
-        "message": "Add generated README.md",
-        "content": content_base64,
-        "branch": "main"
+        "message": "Added README.md",
+        "content": readme_content_base64,
+        "branch": "main" #TODO make it URL[main/master branch]
     }
     response = requests.put(api_url, headers=headers, json=data)
     return response.status_code == 200
