@@ -26,6 +26,24 @@ class UnitTests(unittest.TestCase):
         
         self.assertTrue(success)
         mock_put.assert_called_once()
+        
+    @patch('readmegen.requests.put')
+    def test_commit_success(self, mock_put):
+        mock_put.return_value = unittest.mock.Mock(status_code=200)
+
+        access_token = "fake_access_token"
+        selected_repo = {
+            "html_url": "https://github.com/username/reponame",
+            "owner": {"login": "username"},
+            "name": "reponame"
+        }
+        readme_content = "Sample README content"
+
+        result = readmegen.commit(access_token, selected_repo, readme_content)
+
+        self.assertTrue(result)
+
+        mock_put.assert_called_once()
 
 if __name__ == '__main__':
     unittest.main()
