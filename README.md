@@ -43,7 +43,7 @@ model="gpt-4-1106-preview", #change to use different openAI models
 from readmegen.py L:12
 ```
 
-4. For generating read me documentation, just follow the application:
+4. For generating read me documentation, just follow the application
 
 
 ## Features
@@ -65,7 +65,7 @@ Contributions are welcome! If you have a suggestion for an improvement or want t
 
 ## Acknowledgments
 
-#**BIG ISSUE, I HAVE NO IDEA HOW TO KEEP THE APPLICATION SECRET KEY SO NOT PUBLICLY USEABLE YET. I NEED HELP.**
+#**SECRET KEY ISN'T STORED ON ANY KMS(Key Management Service) SO APPLICATION ISN'T PUBLIC USEABLE**
 
 ---
 
