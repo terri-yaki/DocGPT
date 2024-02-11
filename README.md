@@ -1,6 +1,6 @@
 # DocGPT
 
-DocGPT is a codebase designed to use the capabilities of GPT models for generating documentation. This repository allows users to create comprehensive documentation by leveraging the power of generative pre-trained transformers (GPT). Whether you're looking to autogenerate docstrings for your code, create API documentation, or write up technical explanations, DocGPT aims to facilitate these tasks with the help of advanced language models.
+DocGPT is a script designed to use the use GPT models for generating read me documentation. This repository allows users to create comprehensive documentation by leveraging the power of generative pre-trained transformers (GPT). Whether you're looking to autogenerate for your repo or write up technical explanations, DocGPT aims to facilitate these tasks with the help of OpenAI's language models.
 
 ## Getting Started
 
@@ -21,49 +21,36 @@ pip install -r requirements.txt
 
 To use DocGPT, follow these steps:
 
-1. Import the DocGPT library in your Python script:
+1. Create .env file in the base directory: 
 
-```python
-from docgpt import DocGPT
+```
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+OPENAI_API_KEY=
 ```
 
-2. Initialize the DocGPT object with your GPT model of choice:
+2. Run the Python script:
 
-```python
-doc_gpt = DocGPT(model="gpt-model-name")
+```bash
+py docgpt.py
 ```
 
-3. Use the provided methods to generate documentation for your code. For example, to generate a docstring:
+3. Change the GPT model of your choice:
 
 ```python
-docstring = doc_gpt.generate_docstring(code_snippet=input_code)
-print(docstring)
+Default model:
+model="gpt-4-1106-preview", #change to use different openAI models
+from readmegen.py L:12
 ```
 
-4. For generating API documentation, you can use:
+4. For generating API documentation, just follow the application:
 
-```python
-api_docs = doc_gpt.generate_api_docs(api_endpoint_info)
-print(api_docs)
-```
-
-Replace `input_code` and `api_endpoint_info` with your actual code snippet and API information, respectively.
 
 ## Features
 
-- **Docstring Generation**: Automatically generate descriptive docstrings for functions and classes in your code.
-- **API Documentation**: Create detailed API documentation that helps other developers understand how to use your API.
-- **Technical Documentation**: Generate explanatory text for complex code snippets or algorithms.
+- **Readme Generation**: Automatically generate markdown readme document for your repository.
+- **Scan through undocumented repository**: Only show undocumented repository on the list.
 
-## Examples
-
-To quickly see DocGPT in action, you can run the example scripts in the `examples` directory:
-
-```bash
-python examples/generate_docstring_example.py
-```
-
-This will show you how a docstring can be generated from a sample code snippet.
 
 ## Contributions
 
@@ -75,13 +62,10 @@ Contributions are welcome! If you have a suggestion for an improvement or want t
 4. Push to the branch (`git push origin feature/AmazingFeature`).
 5. Open a pull request.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-A big thank you to all the contributors who have helped shape DocGPT into what it is today.
+BIG ISSUE, I HAVE NO IDEA HOW TO KEEP THE SECRET CODE SO NOT PUBLICLY USEABLE YET. I NEED HELP.
 
 ---
 
