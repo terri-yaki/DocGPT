@@ -10,7 +10,7 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 def generate_readme(selected_repo_url):
     response = openai.ChatCompletion.create(
         model="gpt-4-1106-preview", #change to use different openAI models
-        messages=[{"role": "user", "content": f"generate a readme file with markdown style for this repository: {selected_repo_url}, only the content, no other response."}],
+        messages=[{"role": "user", "content": f"generate a detail readme file in markdown style for this repository: {selected_repo_url}, only the related content, no other response."}],
     )
     return response.choices[0].message.content.strip()
 
