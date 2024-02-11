@@ -1,9 +1,7 @@
 import os
-import sys
 import requests
 from dotenv import load_dotenv
 import webbrowser
-import base64
 import logging
 from authpage import app as authpage
 from threading import Thread
@@ -51,20 +49,29 @@ def run_authpage():
 def after_selection(access_token, selected_repo, readme_content, save_folder):
     user_confirmation = input("\nDo you want to commit this README to your repository? (yes/no): ")
     if user_confirmation.lower() == 'yes':
-        success = commit(access_token, selected_repo, readme_content)
+        branch = input("Enter the branch you want to commit to, keep it blank for branch 'main': ").strip()
+        if not branch:
+            branch = "main"
+        success = commit(access_token, selected_repo, readme_content, branch)
         if success:
-            print("README successfully committed to the repository.").lower()
+            print("README successfully committed to the repository.")
         else:
-            user_input = input("Failed to commit README, would you like to save it instead? (yes/no): ")
-            if user_input == 'yes':
-                file_title = input("Enter a title for the readme file: ")
-                file_name = file_title + ".txt"  # Create filename from title
-                full_path = os.path.join(save_folder, file_name)
-                with open(full_path, "w") as file:
-                    file.write("\n".join(readme_content))
-                print(f"Content saved as '{full_path}'.")
-            else:
-                print("Thanks for using DocGPT, see you next time!")
+            raise Exception("Failed to commit.")
+    else:
+        save_readme(save_folder, readme_content)
+
+                
+def save_readme(save_folder, readme_content):
+    user_input = input("Would you like to save it instead? (yes/no): ")
+    if user_input == 'yes':
+        file_title = input("Enter a title for the readme file: ")
+        file_name = file_title + ".txt"  # Create filename from title
+        full_path = os.path.join(save_folder, file_name)
+        with open(full_path, "w") as file:
+            file.write("\n".join(readme_content))
+        print(f"Content saved as '{full_path}'.")
+    else:
+        return
 
 def main():
     save_folder = "saved_conversation/"
@@ -94,24 +101,28 @@ def main():
     for repo in repositories:
         print(f"{repo['name']} - URL: {repo['html_url']}")
 
-    user_choice = input("Enter the name of the repository you want a README for, or 'all' for all repositories:").strip()
-    if user_choice.lower() == 'all':       #ALL repo
+    user_choice = input("Enter the name of the repository you want a README for, or 'all' for all repositories: ").strip()
+    if user_choice.lower() == 'all': #ALL repo
         for repo in repositories:
+            print(f"Current repo: {repo['name']} \n")
+            print("Analyzing and generating, please wait...")
             readme_content = generate_readme(repo)
-            if commit(access_token, repo, readme_content):
-                after_selection(access_token, selected_repo, readme_content, save_folder)
-            else:
-                print(f"Failed to create README for {repo['name']}")
-                break
+            print("Here's the document:\n" + "-------------------------------------------\n" + readme_content)
+            after_selection(access_token, repo, readme_content, save_folder)
+            print("Moving onto next repo...\n")
+        else:
+            raise Exception(f"Failed to create README for {repo['name']}")
+
     else:
         selected_repo = next((repo for repo in repositories if repo['name'].lower() == user_choice.lower()), None)
         print("Analyzing and generating, please wait...")
         selected_repo_url = selected_repo['html_url']
         readme_content = generate_readme(selected_repo_url)
-        
         print("Here's the document:\n" + "-------------------------------------------\n" + readme_content)
 
         after_selection(access_token, selected_repo, readme_content, save_folder)
+    
+    print("Thanks for using DocGPT, see you next repo!")
         
 
 if __name__ == "__main__":
