@@ -62,11 +62,3 @@ Contributions are welcome! If you have a suggestion for an improvement or want t
 4. Push to the branch (`git push origin feature/AmazingFeature`).
 5. Open a pull request.
 
-
-## Acknowledgments
-
-#**SECRET KEY ISN'T STORED ON ANY KMS(Key Management Service) SO APPLICATION ISN'T PUBLIC USEABLE**
-
----
-
-Please note that this README is a general template and any actual repository named DocGPT might have specific setup instructions, features, and requirements that are not covered in this generic description. Always refer to the original repository for the most up-to-date information.
